@@ -25,7 +25,7 @@ func versionHandler(w http.ResponseWriter, r *http.Request) {
 
 func fileLog() *os.File {
 	// log to custom file
-	LOG_FILE := "/tmp/myapp_log"
+	LOG_FILE := "/tmp/app_log"
 	// open log file
 	logFile, err := os.OpenFile(LOG_FILE, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
