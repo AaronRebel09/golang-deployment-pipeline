@@ -19,7 +19,7 @@ func versionHandler(w http.ResponseWriter, r *http.Request) {
 	// optional: log date-time, filename, and line number
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
-	log.Println("log*** versionHandler", version)
+	log.Println("log02*** versionHandler", version)
 	io.WriteString(w, version)
 }
 
