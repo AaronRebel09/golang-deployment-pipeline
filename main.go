@@ -43,7 +43,7 @@ func main() {
 	// optional: log date-time, filename, and line number
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
-	log.Println("Logging to custom file")
+	log.Println("Logging to alan custom file")
 
 	log.Println("This is a log from GOLANG")
 	log.Println("Listening on port 8000...")
