@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 files:
   - source: /app
-    destination: /opt
+    destination: /home/ec2-user/server
 permissions:
   - object: /
     pattern: "**"
