@@ -26,6 +26,4 @@ artifacts:
     - app
     - appspec.yml
     - buildspec.yml
-    - config/*
     - codedeploy/*
-    - cloudformation/*
