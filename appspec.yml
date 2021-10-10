@@ -3,14 +3,20 @@ os: linux
 files:
   - source: /app
     destination: /opt
+permissions:
+  - object: /
+    pattern: "**"
+    owner: ec2-user
+    group: ec2-user
 hooks:
   BeforeInstall:
     - location: codedeploy/BeforeInstall.sh
   AfterInstall:
     - location: codedeploy/AfterInstall.sh
-  ApplicationStop:
-    - location: codedeploy/ApplicationStop.sh
   ApplicationStart:
     - location: codedeploy/ApplicationStart.sh
   ValidateService:
-    - location: codedeploy/ValidateService.sh      
+    - location: codedeploy/ValidateService.sh
+  ApplicationStop:
+    - location: codedeploy/ApplicationStop.sh
+
