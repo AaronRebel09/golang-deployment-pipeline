@@ -11,22 +11,22 @@ permissions:
 hooks:
   BeforeInstall:
     - location: codedeploy/BeforeInstall.sh
-    timeout: 300
-    runas: ec2-user
-    AfterInstall:
-      - location: codedeploy/AfterInstall.sh
       timeout: 300
       runas: ec2-user
-    ApplicationStart:
-      - location: codedeploy/ApplicationStart.sh
+  AfterInstall:
+    - location: codedeploy/AfterInstall.sh
+      timeout: 300
+      runas: ec2-user
+  ApplicationStart:
+    - location: codedeploy/ApplicationStart.sh
       timeout: 20
       runas: ec2-user
-    ValidateService:
-      - location: codedeploy/ValidateService.sh
+  ValidateService:
+    - location: codedeploy/ValidateService.sh
       timeout: 40
       runas: ec2-user
-    ApplicationStop:
-      - location: codedeploy/ApplicationStop.sh
+  ApplicationStop:
+    - location: codedeploy/ApplicationStop.sh
       timeout: 20
       runas: ec2-user
 
