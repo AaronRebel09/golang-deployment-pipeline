@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 files:
   - source: /app
-    destination: /home/ec2-user/server
+    destination: /opt
 permissions:
   - object: /
     pattern: "**"
@@ -11,12 +11,12 @@ permissions:
 hooks:
   BeforeInstall:
     - location: codedeploy/BeforeInstall.sh
-  AfterInstall:
-    - location: codedeploy/AfterInstall.sh
-  ApplicationStart:
-    - location: codedeploy/ApplicationStart.sh
-  ValidateService:
-    - location: codedeploy/ValidateService.sh
-  ApplicationStop:
-    - location: codedeploy/ApplicationStop.sh
+    AfterInstall:
+      - location: codedeploy/AfterInstall.sh
+    ApplicationStart:
+      - location: codedeploy/ApplicationStart.sh
+    ValidateService:
+      - location: codedeploy/ValidateService.sh
+    ApplicationStop:
+      - location: codedeploy/ApplicationStop.sh
 
