@@ -3,8 +3,8 @@ package main
 import (
 	"io"
 	"log"
-	"log/syslog"
 	"net/http"
+	"os"
 )
 
 const version string = "2.0.1"
@@ -12,20 +12,38 @@ const version string = "2.0.1"
 // VersionHandler handles incoming requests to /version
 // and just returns a simple version number
 func versionHandler(w http.ResponseWriter, r *http.Request) {
+	logFile := fileLog()
+	defer logFile.Close()
+	// Set log out put and enjoy :)
+	log.SetOutput(logFile)
+	// optional: log date-time, filename, and line number
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+
 	log.Println("log*** versionHandler", version)
 	io.WriteString(w, version)
 }
 
-func main() {
-	// Log to syslog
-	logWriter, err := syslog.New(syslog.LOG_SYSLOG, "My Awesome App")
+func fileLog() *os.File {
+	// log to custom file
+	LOG_FILE := "/tmp/myapp_log"
+	// open log file
+	logFile, err := os.OpenFile(LOG_FILE, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
-		log.Fatalln("Unable to set logfile:", err.Error())
+		log.Panic(err)
 	}
-	// + set log flag
-	defer log.SetFlags(log.Lshortfile)
-	// set the log output
-	defer log.SetOutput(logWriter)
+	return logFile
+}
+
+func main() {
+
+	logFile := fileLog()
+	defer logFile.Close()
+	// Set log out put and enjoy :)
+	log.SetOutput(logFile)
+	// optional: log date-time, filename, and line number
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+
+	log.Println("Logging to custom file")
 
 	log.Println("This is a log from GOLANG")
 	log.Println("Listening on port 8000...")
