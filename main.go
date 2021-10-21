@@ -28,10 +28,11 @@ func main() {
 	// optional: log date-time, filename, and line number
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	log.Println("Iniciando web service ...")
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8000"
-	}
+	//port := os.Getenv("PORT")
+	//if port == "" {
+	//	port = "8000"
+	//}
+	port := "8588"
 	log.Println("port : ", port)
 	router := gin.New()
 	router.Use(gin.Logger())
