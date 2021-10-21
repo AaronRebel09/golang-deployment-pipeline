@@ -13,7 +13,7 @@ phases:
       #- golint -set_exit_status
 
       # Run all tests included with our application
-      - go test
+      #- go test
 
   build:
     commands:

@@ -1,27 +1,12 @@
 package main
 
 import (
-	"io"
+	middleware "github.com/AaronRebel09/golang-deployment-pipeline/middleware"
+	routes "github.com/AaronRebel09/golang-deployment-pipeline/routes"
+	"github.com/gin-gonic/gin"
 	"log"
-	"net/http"
 	"os"
 )
-
-const version string = "2.0.1"
-
-// VersionHandler handles incoming requests to /version
-// and just returns a simple version number
-func versionHandler(w http.ResponseWriter, r *http.Request) {
-	logFile := fileLog()
-	defer logFile.Close()
-	// Set log out put and enjoy :)
-	log.SetOutput(logFile)
-	// optional: log date-time, filename, and line number
-	log.SetFlags(log.Lshortfile | log.LstdFlags)
-
-	log.Println("log02*** versionHandler", version)
-	io.WriteString(w, version)
-}
 
 func fileLog() *os.File {
 	// log to custom file
@@ -42,11 +27,26 @@ func main() {
 	log.SetOutput(logFile)
 	// optional: log date-time, filename, and line number
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	log.Println("Iniciando web service ...")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+	log.Println("port : ", port)
+	router := gin.New()
+	router.Use(gin.Logger())
+	//Se agrega Cross Origin Resource Sharing
+	router.Use(middleware.CORSMiddleware())
+	routes.UserRoutes(router)
+	// API-1
+	router.GET("/api/v1", func(c *gin.Context) {
+		c.JSON(200, gin.H{"success": "Access granted for api v1"})
+	})
 
-	log.Println("Logging to alan custom file")
+	// API-2
+	router.GET("/api/v2", func(c *gin.Context) {
+		c.JSON(200, gin.H{"success": "Access granted for api v2"})
+	})
+	router.Run(":" + port)
 
-	log.Println("This is a log from GOLANG")
-	log.Println("Listening on port 8000...")
-	http.HandleFunc("/version", versionHandler)
-	http.ListenAndServe(":8000", nil)
 }
