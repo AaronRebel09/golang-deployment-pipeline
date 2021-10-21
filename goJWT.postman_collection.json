@@ -1,0 +1,161 @@
+{
+	"info": {
+		"_postman_id": "31a1b4c2-5cd2-4fe6-b3ae-b8d4ec131a4b",
+		"name": "goJWT",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "signup",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"first_name\": \"rodrigo\",\n    \"last_name\": \"martinez\",\n    \"email\": \"arontellezm@gmail.com\",\n    \"password\": \"rodrigo9\",\n    \"phone\": \"5547736900\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{localhost}}/users/signup",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"users",
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"arontellezm@gmail.com\",\n    \"password\": \"rodrigo9\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{localhost}}/users/login",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getapiV1",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{localhost}}/api/v1",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getapiV2",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{localhost}}/api/v2",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v2"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "localhost",
+			"value": "http://127.0.0.1:8588"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFbWFpbCI6ImFyb250ZWxsZXptQGdtYWlsLmNvbSIsIkZpcnN0X25hbWUiOiJyb2RyaWdvIiwiTGFzdF9uYW1lIjoibWFydGluZXoiLCJVaWQiOiI2MTY0YTM5YzhjZDNlZTA0NjUzN2QwZjMiLCJleHAiOjE2MzQwNzE4MzZ9.LOyMSfmtq8qn8Pk6OwB6b6O1IKysD15P7Tb_ZN5rj7M"
+		}
+	]
+}
