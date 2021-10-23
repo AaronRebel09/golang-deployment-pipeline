@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/AaronRebel09/golang-deployment-pipeline/database"
@@ -20,6 +21,17 @@ import (
 
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
 var validate = validator.New()
+
+func fileLog() *os.File {
+	// log to custom file
+	LOG_FILE := "/tmp/app_log"
+	// open log file
+	logFile, err := os.OpenFile(LOG_FILE, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		log.Panic(err)
+	}
+	return logFile
+}
 
 // HashPassword is used to encrypt the password before it is stored in the DB
 func HashPassword(password string) string {
@@ -45,15 +57,27 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 // CreateUser is the api used to get a single user
 func SignUp() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		logFile := fileLog()
+		defer logFile.Close()
+		// Set log out put and enjoy :)
+		log.SetOutput(logFile)
+		// optional: log date-time, filename, and line number
+		log.SetFlags(log.Lshortfile | log.LstdFlags)
+		log.Println("endpoint SignUp ...")
+
+
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			log.Println("endpoint SignUp error BindJSON(&user) ...", err.Error())
 			return
 		}
 		validationErr := validate.Struct(user)
 		if validationErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+			log.Println("endpoint SignUp error StatusBadRequest(validationErr) ...", validationErr.Error())
 			return
 		}
 		count, err := userCollection.CountDocuments(ctx, bson.M{"email": user.Email})
@@ -61,6 +85,7 @@ func SignUp() gin.HandlerFunc {
 		if err != nil {
 			log.Panic(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the email"})
+			log.Println("endpoint SignUp error CountDocuments(user.Email) ...", err.Error())
 			return
 		}
 		password := HashPassword(*user.Password)
@@ -70,6 +95,7 @@ func SignUp() gin.HandlerFunc {
 		if err != nil {
 			log.Panic(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the phone number"})
+			log.Println("endpoint SignUp error CountDocuments(user.Phone) ...", err.Error())
 			return
 		}
 		if count > 0 {
@@ -92,14 +118,6 @@ func SignUp() gin.HandlerFunc {
 		defer cancel()
 
 		c.JSON(http.StatusOK, resultInsertionNumber)
-	}
-}
-
-func SimpleEndpoint() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"secret": "super secret information!",
-		})
 	}
 }
 
@@ -129,5 +147,21 @@ func Login() gin.HandlerFunc {
 			*foundUser.Last_name, foundUser.User_id)
 		helper.UpdateAllTokens(token, refreshToken, foundUser.User_id)
 		c.JSON(http.StatusOK, foundUser)
+	}
+}
+
+func SaveFiles() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"secret": "super secret information!",
+		})
+	}
+}
+
+func GetDocsByUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"secret": "super secret information!",
+		})
 	}
 }
