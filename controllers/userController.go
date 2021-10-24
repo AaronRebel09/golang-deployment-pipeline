@@ -1,8 +1,12 @@
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +21,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
@@ -74,12 +81,14 @@ func SignUp() gin.HandlerFunc {
 			log.Println("endpoint SignUp error BindJSON(&user) ...", err.Error())
 			return
 		}
+		log.Println("endpoint success SignUp error BindJSON(&user) ...")
 		validationErr := validate.Struct(user)
 		if validationErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			log.Println("endpoint SignUp error StatusBadRequest(validationErr) ...", validationErr.Error())
 			return
 		}
+		log.Println("endpoint SignUp success StatusBadRequest(validationErr) ...")
 		count, err := userCollection.CountDocuments(ctx, bson.M{"email": user.Email})
 		defer cancel()
 		if err != nil {
@@ -150,11 +159,129 @@ func Login() gin.HandlerFunc {
 	}
 }
 
-func SaveFiles() gin.HandlerFunc {
+func uploadFile(session *session.Session, uploadFileDir string) (error,string) {
+	var response string
+	upFile, err := os.Open(uploadFileDir)
+	if err != nil {
+		return nil, ""
+	}
+	defer upFile.Close()
+
+	upFileInfo, _ := upFile.Stat()
+	var fileSize int64 = upFileInfo.Size()
+	fileBuffer := make([]byte, fileSize)
+	upFile.Read(fileBuffer)
+
+	result, errS3 := s3manager.NewUploader(session).Upload(&s3manager.UploadInput{
+		Bucket:               aws.String("gopher-files"),
+		Key:                  aws.String(uploadFileDir),
+		ACL:                  aws.String("private"),
+		Body:                 bytes.NewReader(fileBuffer),
+		//ContentLength:        aws.Int64(fileSize),
+		ContentType:          aws.String(http.DetectContentType(fileBuffer)),
+		ContentDisposition:   aws.String("attachment"),
+		ServerSideEncryption: aws.String("AES256"),
+	})
+	if errS3 != nil {
+		fmt.Sprintf("Failed to upload file, %v", errS3)
+	} else {
+		fmt.Sprintf("File uploaded to, %s", result.Location)
+		response = result.Location
+	}
+
+	return errS3,response
+}
+
+func UploadImages() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"secret": "super secret information!",
-		})
+		/* LOG FILE BEGIN */
+		logFile := fileLog()
+		defer logFile.Close()
+		// Set log out put and enjoy :)
+		log.SetOutput(logFile)
+		// optional: log date-time, filename, and line number
+		log.SetFlags(log.Lshortfile | log.LstdFlags)
+		log.Println("endpoint UploadImages ...")
+		/* LOG FILE END */
+
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		var foundUser models.User
+		var email = c.Request.PostFormValue("email")
+		fmt.Println("email: ",email)
+
+		err := userCollection.FindOne(ctx, bson.M{"email": email}).Decode(&foundUser)
+
+		mySlice := []models.Files{}
+		for _, x := range foundUser.Files {
+			mySlice = append(
+				mySlice,
+				models.Files{
+					File_name: 	x.File_name,
+					File_size: x.File_size,
+				})
+		}
+
+		err1 := c.Request.ParseMultipartForm(32 << 20)
+		if err1 != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		//Access the name key - Third Approach
+		fmt.Println(c.Request.MultipartForm.File["file"])
+
+		session, err := session.NewSession(
+			&aws.Config{
+				Region: aws.String("us-east-1"),
+				Credentials: credentials.NewStaticCredentials(
+					"AKIASYQU2445NXASRYOI", // AccessKeyID
+					"ND8ngXOB6SdtIA7ytp1MPSNzTOu8IfoVdvf9KBfA", // SecretAccessKey
+				"", // a token will be created when the session it's used.
+				),
+			})
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, h := range c.Request.MultipartForm.File["file"] {
+			file, _ := h.Open()
+			tmpfile, _ := os.Create("./" + h.Filename)
+			io.Copy(tmpfile, file)
+			fmt.Println("Archivo: ", h.Filename)
+			fmt.Println("Peso: ", h.Size)
+
+			// Upload Files
+			err, responseUploadFile := uploadFile(session, h.Filename)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			mySlice = append(
+				mySlice,
+				models.Files{
+				File_name: h.Filename,
+				File_size: h.Size,
+				File_path: responseUploadFile,
+			})
+		}
+
+		foundUser.Files  = mySlice
+		filter := bson.D{{"_id", foundUser.ID}}
+		update := bson.D{{"$set", bson.D{{"files", foundUser.Files}}}}
+
+		result, updateErr := userCollection.UpdateOne(ctx,filter,update)
+		if updateErr != nil {
+			log.Fatal(updateErr)
+		}
+		if result.MatchedCount != 0 {
+				fmt.Println("matched and replaced an existing document")
+				return
+		}
+		if result.UpsertedCount != 0 {
+			fmt.Printf("inserted a new document with ID %v\n", result.UpsertedID)
+		}
+		defer cancel()
+
+		c.JSON(http.StatusOK, "OK")
 	}
 }
 

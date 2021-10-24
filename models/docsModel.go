@@ -1,13 +1,7 @@
 package models
 
-import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
-)
-
-// User is the model that governs all notes object retrieved or inserted into the DB
-type Doc struct {
-	ID          primitive.ObjectID `bson:"_id"`
-	User_name   *string            `json:"user_name" validate:"required,min=2,max=100"`
-	Title       *string            `json:"title" validate:"required,min=2,max=100"`
-	Description *string            `json:"description" validate:"required,min=6"`
+type Files struct {
+	File_name string `json:"file_name"`
+	File_size int64  `json:"file_size"`
+	File_path string `json:"file_path"`
 }
